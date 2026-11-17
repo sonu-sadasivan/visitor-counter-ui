@@ -1,0 +1,1 @@
+export function Header() { return <header className="site-header"><a className="brand" href="/" aria-label="Visitor Counter home">Visitor Counter</a><p className="live-status"><span aria-hidden="true" className="status-dot" />Live Counter</p></header>; }

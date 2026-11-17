@@ -1,0 +1,1 @@
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(34,197,94,0); } } @keyframes shimmer { 50% { opacity: .45; transform: scale(.96); } } @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }

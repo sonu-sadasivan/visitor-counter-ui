@@ -1,0 +1,16 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
+import App from './App';
+
+const response = (body: unknown, ok = true) => Promise.resolve({ ok, json: () => Promise.resolve(body) } as Response);
+describe('Visitor Counter', () => {
+  beforeEach(() => { vi.stubEnv('VITE_API_BASE_URL', 'https://counter.example'); vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true })); });
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+  it('shows a stable loading state', () => { vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {}))); render(<App />); expect(screen.getByText(/counting visitors/i)).toBeInTheDocument(); });
+  it('renders the confirmed visitor count and sends one request under StrictMode', async () => { const fetchMock = vi.fn(() => response({ count: 125 })); vi.stubGlobal('fetch', fetchMock); render(<StrictMode><App /></StrictMode>); expect(await screen.findByText('Total visitors: 125')).toBeInTheDocument(); expect(fetchMock).toHaveBeenCalledTimes(1); expect(fetchMock).toHaveBeenCalledWith('https://counter.example/api/visits', expect.objectContaining({ method: 'POST' })); });
+  it('shows a friendly error and explicitly retries once', async () => { const fetchMock = vi.fn().mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({}) }).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ count: 7 }) }); vi.stubGlobal('fetch', fetchMock); render(<App />); expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load visitor count.'); fireEvent.click(screen.getByRole('button', { name: /try again/i })); await waitFor(() => expect(screen.getByText('Total visitors: 7')).toBeInTheDocument()); expect(fetchMock).toHaveBeenCalledTimes(2); });
+  it('handles an invalid API payload safely', async () => { vi.stubGlobal('fetch', vi.fn(() => response({ count: 'bad' }))); render(<App />); expect(await screen.findByRole('alert')).toBeInTheDocument(); });
+  it('uses the final number without animation when reduced motion is requested', async () => { vi.stubGlobal('fetch', vi.fn(() => response({ count: 42 }))); render(<App />); await waitFor(() => expect(screen.getByText('Total visitors: 42')).toBeInTheDocument()); expect(screen.getAllByText('0')).toHaveLength(4); });
+  it('completes the counter animation at the API value', async () => { vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false })); vi.spyOn(performance, 'now').mockReturnValue(0); vi.stubGlobal('requestAnimationFrame', vi.fn((callback: FrameRequestCallback) => { callback(1500); return 1; })); vi.stubGlobal('cancelAnimationFrame', vi.fn()); vi.stubGlobal('fetch', vi.fn(() => response({ count: 89 }))); render(<App />); expect(await screen.findByText('Total visitors: 89')).toBeInTheDocument(); });
+  it('exposes the counter as an accessible labelled region and announces the final value', async () => { vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true })); vi.stubGlobal('fetch', vi.fn(() => response({ count: 9 }))); render(<App />); expect(await screen.findByRole('region', { name: /visitor total/i })).toBeInTheDocument(); expect(await screen.findByText('Total visitors: 9')).toHaveAttribute('aria-live', 'polite'); });
+});

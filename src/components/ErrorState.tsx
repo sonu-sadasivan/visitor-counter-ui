@@ -1,0 +1,1 @@
+export function ErrorState({ onRetry }: { onRetry: () => void }) { return <div className="counter-content error-state" role="alert"><p className="counter-label">Total visitors</p><p className="error-message">Unable to load visitor count.</p><button type="button" onClick={onRetry}>Try again</button></div>; }

@@ -1,0 +1,2 @@
+import type { ReactNode } from 'react';
+export function HeroSection({ children }: { children: ReactNode }) { return <main className="hero"><div className="hero-copy"><p className="eyebrow">A live welcome</p><h1>Every Visit Counts.</h1><p>A simple way to see how many people have visited this website.</p></div>{children}<p className="supporting-text">You&apos;re part of the journey. Thanks for stopping by!</p></main>; }

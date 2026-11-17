@@ -1,0 +1,1 @@
+export function LoadingState() { return <div className="counter-content" aria-busy="true"><p className="counter-label">Total visitors</p><div className="placeholder-digits" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div><p className="state-message">Counting visitors<span className="ellipsis" aria-hidden="true">...</span></p></div>; }
